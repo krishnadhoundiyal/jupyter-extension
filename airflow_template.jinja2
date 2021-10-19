@@ -1,0 +1,50 @@
+from airflow import DAG
+from airflow.utils.dates import days_ago
+
+{% if cos_secret %}
+from airflow.kubernetes.secret import Secret
+{% endif %}
+
+args = {
+    'project_id' : '{{ pipeline_name }}',
+}
+
+dag = DAG(
+    '{{ pipeline_name }}',
+    default_args=args,
+    schedule_interval='@once',
+    start_date=days_ago(1),
+    description='{{ pipeline_description }}',
+    is_paused_upon_creation={{ is_paused_upon_creation }},
+)
+
+{% if cos_secret %}
+## Ensure that the secret named '{{ cos_secret }}' is defined in the Kubernetes namespace where this pipeline will be run
+env_var_secret_id = Secret(deploy_type='env',
+                           deploy_target='AWS_ACCESS_KEY_ID',
+                           secret='{{ cos_secret }}',
+                           key='AWS_ACCESS_KEY_ID',
+)
+env_var_secret_key = Secret(deploy_type='env',
+                            deploy_target='AWS_SECRET_ACCESS_KEY',
+                            secret='{{ cos_secret }}',
+                            key='AWS_SECRET_ACCESS_KEY',
+)
+{% endif %}
+
+{% for operation in operations_list %}
+op_{{ operation.id }} = NotebookOp(
+
+        {% for param, value in operation.items() %}
+                {% if param != "id" %}
+                                                           {{ param }}={{ value }},
+                {% endif %}
+        {% endfor %}
+        dag=dag
+    )
+{% endfor %}
+{% for source, destlist in connections.items() %}
+    {% for destination in destlist %}
+    op_{{source}} >> op_{{destination}}
+    {% endfor %}
+ {% endfor %}

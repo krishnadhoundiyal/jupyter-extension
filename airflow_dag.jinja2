@@ -1,0 +1,33 @@
+from datetime import timedelta
+from airflow import DAG
+from airflow.utils.dates import days_ago
+import datetime
+default_args = {{ default_args }}
+dag = DAG(
+        '{{json_rules.name}}',
+        default_args=default_args,
+        description='{{ json_rules.pipeline_description }}',
+        schedule_interval=timedelta(days=1),
+        start_date=days_ago(2),
+        tags=['example']
+        )
+ {% for item in json_rules["nodes"] %}
+from {{item.module_name}} import {{item.class_name}}
+    op_{{item.name}} = {{item.class_name}}(
+    {% for params, value in item.parameters.items() %}
+        {% if not loop.last %}
+                                                  {{ params }} = '{{ value }}',
+        {% else %}
+                                                  {{ params }} = '{{ value }}',
+        {% endif %}
+
+    {% endfor %}
+    dag=dag
+    )
+ {% endfor %}
+ {% for source, destlist in json_rules["connections"].items() %}
+    {% for destination in destlist %}
+    op_{{source}} >> op_{{destination}}
+    {% endfor %}
+ {% endfor %}
+
