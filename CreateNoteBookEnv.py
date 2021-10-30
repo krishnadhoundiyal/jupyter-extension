@@ -9,7 +9,7 @@ EXPLORER_GITHUB_ORG = os.getenv("EXPLORER_GITHUB_ORG", "krishnadhoundiyal/explor
 EXPLORER_GITHUB_BRANCH = os.getenv("EXPLORER_GITHUB_BRANCH", "main")
 
 EXPLORER_BOOTSCRIPT_URL = os.getenv('EXPLORER_BOOTSTRAP_SCRIPT_URL',
-                                 'https://raw.githubusercontent.com/{org}/{branch}/CreateNoteBookEnv.py'.
+                                 'https://raw.githubusercontent.com/{org}/{branch}/runnotebook.py'.
                                  format(org=EXPLORER_GITHUB_ORG,
                                         branch=EXPLORER_GITHUB_BRANCH))
 
@@ -61,13 +61,13 @@ class NoteBookOperatorBuilder(object):
                           f"curl -H 'Cache-Control: no-cache' -L {EXPLORER_BOOTSCRIPT_URL} --output runnotebook.py && "
                           f"curl -H 'Cache-Control: no-cache' -L {EXPLORER_REQUIREMENTS_URL} "
                           f"--output requirements.txt && "
-                          "python3 -m pip install packaging && "
+                          "python3 -m pip install packaging && python -m pip install -r requirements.txt && "
                           "python3 -m pip freeze > requirements-current.txt && "
                           "python3 runnotebook.py "
-                          f"--cos-endpoint {self.cos_endpoint} "
-                          f"--cos-bucket {self.cos_bucket} "
-                          f"--cos-directory '{self.cos_directory}' "
-                          f"--cos-dependencies-archive '{self.cos_dependencies_archive}' "
+                          f"--endpoint {self.cos_endpoint} "
+                          f"--bucket {self.cos_bucket} "
+                          f"--directory '{self.cos_directory}' "
+                          f"--dependencies-archive '{self.cos_dependencies_archive}' "
                           f"--file '{self.filename}' "]
 
         if self.inputs:

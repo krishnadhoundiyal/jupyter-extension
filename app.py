@@ -6,7 +6,6 @@ from .handler import AirflowExecutorOnRemote
 HERE = os.path.dirname(__file__)
 
 class MyExtension(ExtensionApp):
-    
     # Name of the extension.
     extension_name = "my_ext"
 
@@ -27,8 +26,6 @@ class MyExtension(ExtensionApp):
     def initialize_handlers(self):
         # Add a group with () to send to handler.
         self.handlers.extend([
-            (r'/explorersdev/executeAirflow/?', AirflowExecutorOnRemote),
-            
+            (r'/explorersdev/executeAirflow/?', AirflowExecutorOnRemote)
         ])
-                    
 main = MyExtension.launch_instance
