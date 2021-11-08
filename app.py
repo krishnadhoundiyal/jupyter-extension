@@ -2,6 +2,9 @@ import os
 import jinja2
 from jupyter_server.extension.application import ExtensionApp
 from .handler import AirflowExecutorOnRemote
+from .AirflowTaskStatus import TriggerAirflow
+from .AirflowTaskStatus import AirflowTaskStatus
+from .AirflowTaskStatus import AirflowLogStatus
 
 HERE = os.path.dirname(__file__)
 
@@ -26,6 +29,9 @@ class MyExtension(ExtensionApp):
     def initialize_handlers(self):
         # Add a group with () to send to handler.
         self.handlers.extend([
-            (r'/explorersdev/executeAirflow/?', AirflowExecutorOnRemote)
+            (r'/explorersdev/executeAirflow/?', AirflowExecutorOnRemote),
+            (r'/explorersdev/getTaskStatus/?', AirflowTaskStatus),
+            (r'/explorersdev/getTaskLog/?', AirflowLogStatus),
+            (r'/explorersdev/triggerAirflow/?', TriggerAirflow),
         ])
 main = MyExtension.launch_instance

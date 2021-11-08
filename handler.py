@@ -5,8 +5,9 @@ from jupyter_server.extension.handler import ExtensionHandlerMixin
 from .pipelineprocessing import PipelineProcessorManager
 from .git import GithubClient
 from .PipelineProcessor import RuntimePipelineProcessor
+from .httperrors import HttpErrorMixin
 import json
-class AirflowExecutorOnRemote(ExtensionHandlerMixin, JupyterHandler):
+class AirflowExecutorOnRemote(HttpErrorMixin, JupyterHandler):
     
     @web.authenticated
     async def post(self, *args, **kwargs):
