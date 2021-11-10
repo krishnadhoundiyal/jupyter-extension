@@ -504,7 +504,7 @@ config = {
         }
     ],
     "github": {
-        "token": "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",
+        "token": "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",
         "repo": "krishnadhoundiyal/extensions-jupyter",
         "branch": "test"
     },
@@ -647,7 +647,7 @@ config = {
         }
     ],
      "github": {
-        "token": "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",
+        "token": "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",
         "repo": "krishnadhoundiyal/extensions-jupyter",
         "branch": "test"
     },

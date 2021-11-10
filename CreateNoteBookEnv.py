@@ -1,6 +1,7 @@
 import os
 from typing import List
 from typing import Optional
+import re
 
 # Inputs and Outputs separator character.  If updated,
 # same-named variable in bootstrapper.py must be updated!
@@ -57,6 +58,9 @@ class NoteBookOperatorBuilder(object):
 
     @property
     def container_cmd(self):
+        regex = r"^https:\/\/(.*)"
+        matches = re.match(regex, self.cos_endpoint)
+        self.cos_endpoint = matches.group(1)
         self.arguments = [f"mkdir -p {self.container_work_dir} && cd {self.container_work_dir} && "
                           f"curl -H 'Cache-Control: no-cache' -L {EXPLORER_BOOTSCRIPT_URL} --output runnotebook.py && "
                           f"curl -H 'Cache-Control: no-cache' -L {EXPLORER_REQUIREMENTS_URL} "

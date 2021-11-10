@@ -43,10 +43,11 @@ class TriggerAirflow(HttpErrorMixin, JupyterHandler):
             'Authorization': 'Basic ' + base64_message
 
         }
-        url = "http://"+ airflow_ip + ":"+ airflow_port +"/api/v1/dags/" + dag_id + "/dagRuns"
+        url = airflow_ip + "/api/v1/dags/" + dag_id + "/dagRuns"
         try:
             response = requests.request("POST", url, headers=headers, data=payload)
             data = response.json()
+            print(data)
             if data.get("state"):
                 #Airflow accepted the request and returned the object
                 json_msg = json.dumps({
@@ -63,6 +64,9 @@ class TriggerAirflow(HttpErrorMixin, JupyterHandler):
                     if (data['title'] == "Conflict"):
                         raise RuntimeError("A Dag Run Id already exists, try and re-execute " +
                                            "If problem persists, contact System Admin")
+                    else:
+                        raise RuntimeError(" detailas are {detail}".format(detail=data["detail"]) +
+                                           " Description is {title} ".format(title=data["title"]))
         except requests.exceptions.HTTPError as errh:
             raise RuntimeError("HTTP Request encountered an error") from errh
 
@@ -108,7 +112,7 @@ class AirflowTaskStatus(HttpErrorMixin, JupyterHandler):
         message_bytes = credentials.encode('ascii')
         base64_bytes = base64.b64encode(message_bytes)
         base64_message = base64_bytes.decode('ascii')
-        url = "http://" + airflow_ip + ":" + airflow_port + "/api/v1/dags/" + \
+        url = airflow_ip  + "/api/v1/dags/" + \
               dag_id + "/dagRuns/" + dag_run_id + "/taskInstances"
 
         payload = {}
@@ -166,7 +170,7 @@ class AirflowLogStatus(HttpErrorMixin, JupyterHandler):
         message_bytes = credentials.encode('ascii')
         base64_bytes = base64.b64encode(message_bytes)
         base64_message = base64_bytes.decode('ascii')
-        url = "http://" + airflow_ip + ":" + airflow_port + "/api/v1/dags/" + \
+        url =  airflow_ip  + "/api/v1/dags/" + \
               dag_id + "/dagRuns/" + dag_run_id + "/taskInstances/" + task_id + \
               "/logs/1"
 
