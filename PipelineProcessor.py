@@ -5,17 +5,17 @@ import autopep8
 from black import FileMode
 from black import format_str
 from jinja2 import Template
-from dfoperationtest import Operation
-from dfoperationtest import GenericOperation
-from cloudobjectstorage import CosClient
+from .dfoperationtest import Operation
+from .dfoperationtest import GenericOperation
+from .cloudobjectstorage import CosClient
 from typing import Dict
 from typing import List
 from typing import Union
 import ast
-from archivetest import create_temp_archive
-from minio.error import SignatureDoesNotMatch
+from .archivetest import create_temp_archive
+#from minio.error import SignatureDoesNotMatch
 from urllib3.exceptions import MaxRetryError
-from CreateNoteBookEnv import NoteBookOperatorBuilder
+from .CreateNoteBookEnv import NoteBookOperatorBuilder
 class PipelineProcessorManager(SingletonConfigurable):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -214,7 +214,7 @@ class RuntimePipelineProcessor(PipelineProcessor):
                              'name' : "'" + operationItem.id + "'",
                              'namespace' : "'" + 'default' + "'",
                              'cmds' : ["sh", "-c"],
-                             'arguments': '"' + notebookBuilder.container_cmd + '"',
+                             'arguments': [notebookBuilder.container_cmd],
                              #'runtime_image': operationItem.runtime_image,
                              'image' : "'" + operationItem.runtime_image + "'",
                              'env_vars':pipeline_envs,
@@ -237,7 +237,7 @@ class RuntimePipelineProcessor(PipelineProcessor):
         return name + '-' + operation.id + ".tar.gz"
 
     def _get_dependency_source_dir(self, operation):
-        return os.path.join(self.root_dir, os.path.dirname(operation.filename))
+        return os.path.join(self.root_dir, os.path.dirname(operation.filename.lstrip(os.path.sep)))
 
     def _generate_dependency_archive(self, operation):
         archive_artifact_name = self._get_dependency_archive_name(operation)
@@ -276,10 +276,6 @@ class RuntimePipelineProcessor(PipelineProcessor):
              pass
             #self.log.error("Connection was refused when attempting to connect to : {}".
                            #format(cos_endpoint), exc_info=True)
-
-        except SignatureDoesNotMatch as ex:
-            raise RuntimeError("Connection was refused due to incorrect Object Storage credentials. " +
-                               "Please validate your runtime configuration details and retry.") from ex
         except BaseException as ex:
             #self.log.error("Error uploading artifacts to object storage for operation: {}".
                            #format(operation.name), exc_info=True)
