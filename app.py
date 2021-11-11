@@ -5,7 +5,8 @@ from .handler import AirflowExecutorOnRemote
 from .AirflowTaskStatus import TriggerAirflow
 from .AirflowTaskStatus import AirflowTaskStatus
 from .AirflowTaskStatus import AirflowLogStatus
-
+from .AirflowTaskStatus import AirflowDAGStatus
+from .AirflowTaskStatus import AirflowJupyterNotebookDownload
 HERE = os.path.dirname(__file__)
 
 class MyExtension(ExtensionApp):
@@ -33,5 +34,7 @@ class MyExtension(ExtensionApp):
             (r'/explorersdev/getTaskStatus/?', AirflowTaskStatus),
             (r'/explorersdev/getTaskLog/?', AirflowLogStatus),
             (r'/explorersdev/triggerAirflow/?', TriggerAirflow),
+            (r'/explorersdev/getDAGStatus/?', AirflowDAGStatus),
+            (r'/explorersdev/getProcessedNotebook/?', AirflowJupyterNotebookDownload),
         ])
 main = MyExtension.launch_instance

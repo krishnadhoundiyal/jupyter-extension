@@ -3,6 +3,9 @@ from jupyter_server.base.handlers import JupyterHandler
 from jupyter_server.extension.handler import ExtensionHandlerJinjaMixin
 from jupyter_server.extension.handler import ExtensionHandlerMixin
 from .httperrors import HttpErrorMixin
+from minio.api import Minio
+from urllib.parse import urlparse
+import os
 import requests
 import base64
 import json
@@ -202,3 +205,72 @@ class AirflowLogStatus(HttpErrorMixin, JupyterHandler):
         self.set_header("Content-Type", 'application/json')
         self.finish(json_msg)
 
+class AirflowDAGStatus(HttpErrorMixin, JupyterHandler):
+
+    @web.authenticated
+    async def post(self, *args, **kwargs):
+        payload = self.get_json_body()
+        airflow_ip = payload['airflow_ip']
+        airflow_port = payload['airflow_port']
+        airflow_uname = payload['airflow_uname']
+        airflow_pass = payload['airflow_pass']
+        dag_id = payload['dag_id']
+        dag_run_id = payload['dag_run_id']
+        credentials = airflow_uname + ":" + airflow_pass
+        message_bytes = credentials.encode('ascii')
+        base64_bytes = base64.b64encode(message_bytes)
+        base64_message = base64_bytes.decode('ascii')
+        url = airflow_ip  + "/api/v1/dags/" + \
+              dag_id + "/dagRuns/" + dag_run_id
+
+        payload = {}
+        headers = {
+            'Authorization': 'Basic ' + base64_message
+        }
+        try:
+            response = requests.request("GET", url, headers=headers, data=payload)
+            temp_data = response.json()
+            state = temp_data.get("state","notfound")
+        except BaseException as errh:
+            raise errh from errh
+        json_msg = json.dumps({
+            'state': state,
+            'dag_run_id': dag_run_id,
+            'dag_id' : dag_id
+
+        });
+        self.set_header("Content-Type", 'application/json')
+        self.finish(json_msg)
+class AirflowJupyterNotebookDownload(HttpErrorMixin, JupyterHandler):
+
+    @web.authenticated
+    async def post(self, *args, **kwargs):
+        payload = self.get_json_body()
+        root_dir = "/project/jupyterlab_apod"
+        directory_name = payload['directory']
+        filename = payload['filename']
+        filename = filename.lstrip("/")
+        cos_endpoint = urlparse(payload['cos-endpoint'])
+        cos_username = payload['cos-username']
+        cos_password = payload['cos-password']
+        cos_bucket = payload['cos-bucket']
+        outFileName = directory_name + "-" + filename
+        outputFilePathName = os.path.join(root_dir,outFileName)
+        try:
+            cosClient = Minio(endpoint=cos_endpoint.netloc,
+                                      access_key=cos_username,
+                                      secret_key=cos_password,
+                                      secure=cos_endpoint.scheme)
+            downloadfile = os.path.join(directory_name,filename)
+            cosClient.fget_object(bucket_name=cos_bucket,
+                               object_name=downloadfile,
+                               file_path=outputFilePathName)
+        except BaseException as errh:
+            raise errh from errh
+        json_msg = json.dumps({
+            'file': outFileName,
+            'directory' : root_dir
+
+        });
+        self.set_header("Content-Type", 'application/json')
+        self.finish(json_msg)
