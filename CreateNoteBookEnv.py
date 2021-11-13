@@ -65,7 +65,7 @@ class NoteBookOperatorBuilder(object):
                           f"curl -H 'Cache-Control: no-cache' -L {EXPLORER_BOOTSCRIPT_URL} --output runnotebook.py && "
                           f"curl -H 'Cache-Control: no-cache' -L {EXPLORER_REQUIREMENTS_URL} "
                           f"--output requirements.txt && "
-                          "python3 -m pip install packaging && python -m pip install -r requirements.txt && "
+                          "python3 -m pip install packaging && python3 -m pip install -r requirements.txt && "
                           "python3 -m pip freeze > requirements-current.txt && "
                           "python3 runnotebook.py "
                           f"--endpoint {self.cos_endpoint} "
