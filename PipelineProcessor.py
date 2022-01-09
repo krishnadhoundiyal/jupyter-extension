@@ -244,7 +244,9 @@ class RuntimePipelineProcessor(PipelineProcessor):
         archive_source_dir = self._get_dependency_source_dir(operation)
 
         dependencies = [os.path.basename(operation.filename)]
-        dependencies.extend(operation.dependencies)
+        # For all items in dependecies, iterate and ensure the correct path is determined
+        dependencies_list = list(map(lambda dependent:dependent.lstrip(os.path.sep), operation.dependencies))
+        dependencies.extend(dependencies_list)
         archive_artifact = create_temp_archive(archive_name=archive_artifact_name,
                                                source_dir=archive_source_dir,
                                                filenames=dependencies,
@@ -504,7 +506,7 @@ config = {
         }
     ],
     "github": {
-        "token": "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",
+        "token": "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",
         "repo": "krishnadhoundiyal/extensions-jupyter",
         "branch": "test"
     },
@@ -647,7 +649,7 @@ config = {
         }
     ],
      "github": {
-        "token": "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",
+        "token": "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",
         "repo": "krishnadhoundiyal/extensions-jupyter",
         "branch": "test"
     },
